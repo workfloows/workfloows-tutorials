@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "gcp-build": "node node_modules/puppeteer/install.js"
+  },
+  "dependencies": {
+    "@google-cloud/functions-framework": "^3.0.0",
+    "puppeteer": "^19.8.0"
+  }
+}
