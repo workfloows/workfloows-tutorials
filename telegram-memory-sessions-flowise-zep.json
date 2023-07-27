@@ -1,0 +1,1000 @@
+{
+  "name": "Memory sessions with FlowiseAI and Zep",
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.message.text }}",
+              "value2": "/start"
+            }
+          ]
+        }
+      },
+      "id": "7e8b9a29-26f5-4d71-bc06-fe0c5039f297",
+      "name": "Check if start",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        1410
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.message.chat.id }}",
+        "text": "Choose memory:\n\n/m1 - memory 1\n/m2 - memory 2\n/m3 - memory 3",
+        "additionalFields": {}
+      },
+      "id": "7b5f16b6-2a2a-4ecb-91d0-a4056b1beae1",
+      "name": "Choose memory [TELEGRAM]",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        1270
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "na4U2hVORqwY6tGz",
+          "name": "Telegram API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.message.entities[0].type }}",
+              "value2": "bot_command"
+            }
+          ]
+        }
+      },
+      "id": "87021758-37bd-4a00-87c9-02df118ed6bc",
+      "name": "Check if command",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        1530
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "currentMemory",
+        "key": "={{ $json.message.chat.id }}",
+        "options": {}
+      },
+      "id": "bf5eb645-482c-4f8b-845a-636e507aa749",
+      "name": "Get current memory [REDIS]",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -20,
+        1990
+      ],
+      "alwaysOutputData": false,
+      "credentials": {
+        "redis": {
+          "id": "Ab7RZterPo0pMSL3",
+          "name": "Redis"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "id": "8c9bd217-2279-4ed9-a996-629e4d2bcb65",
+      "name": "Telegram trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1,
+      "position": [
+        -680,
+        1410
+      ],
+      "webhookId": "e51e1f63-a0d4-4cfe-9577-2328ea808a22",
+      "credentials": {
+        "telegramApi": {
+          "id": "na4U2hVORqwY6tGz",
+          "name": "Telegram API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "currentMemory",
+        "key": "={{ $('Telegram trigger').item.json.message.chat.id }}",
+        "options": {}
+      },
+      "id": "3237b33b-0ba7-400a-b92c-b62d550a5f9d",
+      "name": "Check current memory [REDIS]",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        520,
+        580
+      ],
+      "credentials": {
+        "redis": {
+          "id": "Ab7RZterPo0pMSL3",
+          "name": "Redis"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram trigger').item.json[\"message\"][\"chat\"][\"id\"] }}",
+        "text": "=Current memory is {{ $json.currentMemory }}.",
+        "additionalFields": {}
+      },
+      "id": "b7f85152-2aeb-4efb-8f5f-cf7b96e27228",
+      "name": "Send memory info [TELEGRAM]",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        720,
+        580
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "na4U2hVORqwY6tGz",
+          "name": "Telegram API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram trigger').item.json[\"message\"][\"chat\"][\"id\"] }}",
+        "text": "Command not recognized.",
+        "additionalFields": {}
+      },
+      "id": "ec5d8960-1362-48fb-9c79-af9ce3d5d41a",
+      "name": "Command not recognized [TELEGRAM]",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        520,
+        1470
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "na4U2hVORqwY6tGz",
+          "name": "Telegram API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $('Telegram trigger').item.json.message.text }}",
+              "value2": "/currentmemory"
+            }
+          ]
+        }
+      },
+      "id": "302b36be-16a6-434e-a237-b57185955726",
+      "name": "Check if current memory [TELEGRAM]",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        0,
+        1390
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.currentMemory }}",
+              "operation": "isEmpty"
+            }
+          ]
+        }
+      },
+      "id": "9a10a49f-78f5-410a-a6fe-f3809cd94303",
+      "name": "Check if record [REDIS]",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        180,
+        1990
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram trigger').item.json[\"message\"][\"chat\"][\"id\"] }}",
+        "text": "The memory not set. Enter command /start to choose memory.",
+        "additionalFields": {}
+      },
+      "id": "c029102d-b5c0-482c-9943-ed43086cfa2f",
+      "name": "Inform about empty record [TELEGRAM]",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        440,
+        1840
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "na4U2hVORqwY6tGz",
+          "name": "Telegram API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "[URL_TO_YOUR_FLOWISE_CHATFLOW]",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"question\": \"{{ $('Telegram trigger').item.json[\"message\"][\"text\"] }}\", \"overrideConfig\": {\"sessionId\": \"{{ $('Telegram trigger').item.json[\"message\"][\"chat\"][\"id\"] }}mslot1\" }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "0f04a0f5-b2ad-47a5-a65d-a678a33f7878",
+      "name": "Use M1 [FLOWISE/ZEP]",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        720,
+        2210
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "[URL_TO_YOUR_FLOWISE_CHATFLOW]",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"question\": \"{{ $('Telegram trigger').item.json[\"message\"][\"text\"] }}\", \"overrideConfig\": {\"sessionId\": \"{{ $('Telegram trigger').item.json[\"message\"][\"chat\"][\"id\"] }}mslot2\" }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "f61058d1-414c-40cc-94d9-d75b5783f5c1",
+      "name": "Use M2 [FLOWISE/ZEP]",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        720,
+        2390
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "[URL_TO_YOUR_FLOWISE_CHATFLOW]",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"question\": \"{{ $('Telegram trigger').item.json[\"message\"][\"text\"] }}\", \"overrideConfig\": {\"sessionId\": \"{{ $('Telegram trigger').item.json[\"message\"][\"chat\"][\"id\"] }}mslot3\" }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "f07368c7-0955-4649-b03b-a696beb99bcc",
+      "name": "Use M3 [FLOWISE/ZEP]",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        720,
+        2570
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram trigger').item.json[\"message\"][\"chat\"][\"id\"] }}",
+        "text": "={{ $json.data }}",
+        "additionalFields": {}
+      },
+      "id": "b59fc99e-faaf-44f1-bab1-452eada7a4f9",
+      "name": "Respond M1 [TELEGRAM]",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        900,
+        2210
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "na4U2hVORqwY6tGz",
+          "name": "Telegram API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram trigger').item.json[\"message\"][\"chat\"][\"id\"] }}",
+        "text": "={{ $json.data }}",
+        "additionalFields": {}
+      },
+      "id": "4a3d2425-6136-4174-9184-860573dc4c6d",
+      "name": "Respond M2 [TELEGRAM]",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        900,
+        2390
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "na4U2hVORqwY6tGz",
+          "name": "Telegram API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram trigger').item.json[\"message\"][\"chat\"][\"id\"] }}",
+        "text": "={{ $json.data }}",
+        "additionalFields": {}
+      },
+      "id": "16a70a19-66c1-4fe0-a153-4ec6c322ab58",
+      "name": "Respond M3 [TELEGRAM]",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        900,
+        2570
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "na4U2hVORqwY6tGz",
+          "name": "Telegram API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram trigger').item.json[\"message\"][\"chat\"][\"id\"] }}",
+        "text": "An error occured. Please contact bot admin.",
+        "additionalFields": {}
+      },
+      "id": "ce10e084-3155-43a8-9304-a212dade6f3d",
+      "name": "Send error [TELEGRAM]",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        720,
+        2790
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "na4U2hVORqwY6tGz",
+          "name": "Telegram API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendChatAction",
+        "chatId": "={{ $json.message.chat.id }}"
+      },
+      "id": "e60167e5-b655-4406-ab53-6535efec1f2b",
+      "name": "Send typing action [TELEGRAM]",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        1610
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "na4U2hVORqwY6tGz",
+          "name": "Telegram API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## ⚠️ Note\n\n1. Complete video guide for this workflow is available [on my YouTube](https://www.youtube.com/watch?v=Dfbpt_i4-68). \n2. Remember to add your credentials and configure nodes (covered in the video guide).\n3. If you like this workflow, please subscribe to [my YouTube channel](https://www.youtube.com/@workfloows) and/or [my newsletter](https://workfloows.com/). I invite you also to buy my product [on Gumroad](https://workfloows.gumroad.com/).\n\n**Thank you for your support!**",
+        "height": 267.3518783538228,
+        "width": 382.8182353336517
+      },
+      "id": "f27fd7de-8e09-4daf-94ac-7096916e2fc8",
+      "name": "Sticky Note5",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -720,
+        990
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🦜🔗 Flowise (LangChain)\n\n**This workflow requires installing [FlowiseAI](https://flowiseai.com/) and [Zep](https://www.getzep.com/) on your server.** \n\nInstallation guides and other data about FlowiseAI can be found [here](https://github.com/FlowiseAI/Flowise). Guides for installation of Zep are available in [official documentation](https://docs.getzep.com/deployment/).",
+        "height": 266.6075757063218,
+        "width": 345.7880926620822
+      },
+      "id": "de92ea67-ddcc-44dd-9523-e494ef0505f6",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1080,
+        990
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Trigger\nRemember to add credentials of your Telegram bot.",
+        "height": 297.78936091241343,
+        "width": 182.4715262478496
+      },
+      "id": "36728ff0-9c7d-42ae-be6f-60bdc976f0dc",
+      "name": "Sticky Note6",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -720,
+        1271.7283118148598
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Check if start\nThis node will check if user sends an initial ```/start``` message.",
+        "height": 299.0166642010856,
+        "width": 182.4715262478496
+      },
+      "id": "85e81263-3408-4c66-bf54-216c67387fe4",
+      "name": "Sticky Note7",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -520,
+        1270.501008526188
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Initial response\nIn response to ```/start``` message, this node sends list of available memory sessions (M1, M2, M3 etc.).",
+        "height": 400.882837160891,
+        "width": 182.4715262478496
+      },
+      "id": "cdfdf99e-1d0b-4074-afa9-35528f1d66a0",
+      "name": "Sticky Note9",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -280,
+        1068.1338270401945
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Check command\nNode checks if user sends command ```/currentmemory```.",
+        "height": 345.2706568929251,
+        "width": 182.4715262478496
+      },
+      "id": "76582f57-e4ef-4a85-92f5-c007834c4deb",
+      "name": "Sticky Note10",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        1225.6121802679659
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Memory session info\nSequence gets current session from Redis database (```/m1```, ```/m2``` or ```/m3```) and returns information to the user.",
+        "height": 295.4114607906109,
+        "width": 445.19113647927463
+      },
+      "id": "c4016f12-86af-4b99-a4ac-648f3e9a5663",
+      "name": "Sticky Note11",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        460,
+        460
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Set memory session\nSequence sets/updates current session in Redis database according to input of the user (```/m1```, ```/m2``` or ```/m3```).",
+        "height": 665.5201087808667,
+        "width": 445.19113647927463
+      },
+      "id": "34ae71dd-0cd7-450f-b289-0c68ff1f1745",
+      "name": "Sticky Note12",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        460,
+        770
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "={{ $('Telegram trigger').item.json[\"message\"][\"chat\"][\"id\"] }}",
+        "value": "/m1"
+      },
+      "id": "8555292c-eb7c-4c40-9992-e04297993943",
+      "name": "Set memory session [REDIS] [1]",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        520,
+        890
+      ],
+      "credentials": {
+        "redis": {
+          "id": "Ab7RZterPo0pMSL3",
+          "name": "Redis"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "={{ $('Telegram trigger').item.json[\"message\"][\"chat\"][\"id\"] }}",
+        "value": "/m2"
+      },
+      "id": "70a2042a-5a1d-4b99-ae46-efa93d9698ec",
+      "name": "Set memory session [REDIS] [2]",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        520,
+        1070
+      ],
+      "credentials": {
+        "redis": {
+          "id": "Ab7RZterPo0pMSL3",
+          "name": "Redis"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "={{ $('Telegram trigger').item.json[\"message\"][\"chat\"][\"id\"] }}",
+        "value": "/m3"
+      },
+      "id": "f1f66620-2ab0-4100-9abc-c773be169489",
+      "name": "Set memory session [REDIS] [3]",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        520,
+        1250
+      ],
+      "credentials": {
+        "redis": {
+          "id": "Ab7RZterPo0pMSL3",
+          "name": "Redis"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.message.text }}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "/m1"
+            },
+            {
+              "value2": "/m2",
+              "output": 1
+            },
+            {
+              "value2": "/m3",
+              "output": 2
+            }
+          ]
+        },
+        "fallbackOutput": 3
+      },
+      "id": "908c0220-0ea6-44c3-a72d-c59d346deb47",
+      "name": "Switch memory sessions [TELEGRAM] [1]",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [
+        240,
+        1530
+      ]
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.currentMemory }}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "/m1"
+            },
+            {
+              "value2": "/m2",
+              "output": 1
+            },
+            {
+              "value2": "/m3",
+              "output": 2
+            }
+          ]
+        },
+        "fallbackOutput": 3
+      },
+      "id": "33cdb2aa-092d-4b0e-bf90-fe0220246b63",
+      "name": "Switch memory sessions [TELEGRAM] [2]",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [
+        440,
+        2150
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram trigger').item.json[\"message\"][\"chat\"][\"id\"] }}",
+        "text": "The memory has been changed to M1.",
+        "additionalFields": {}
+      },
+      "id": "3028983e-f065-4394-b86a-22df14ed9239",
+      "name": "Session confirmation [TELEGRAM] [1]",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        720,
+        890
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "na4U2hVORqwY6tGz",
+          "name": "Telegram API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram trigger').item.json[\"message\"][\"chat\"][\"id\"] }}",
+        "text": "The memory has been changed to M2.",
+        "additionalFields": {}
+      },
+      "id": "204b8b3c-112a-46db-a451-dd96d3674d94",
+      "name": "Session confirmation [TELEGRAM] [2]",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        720,
+        1070
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "na4U2hVORqwY6tGz",
+          "name": "Telegram API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram trigger').item.json[\"message\"][\"chat\"][\"id\"] }}",
+        "text": "The memory has been changed to M3.",
+        "additionalFields": {}
+      },
+      "id": "dd9c8690-f9ab-4663-b6a4-9c20be61a491",
+      "name": "Session confirmation [TELEGRAM] [3]",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        720,
+        1250
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "na4U2hVORqwY6tGz",
+          "name": "Telegram API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Get memory session\nThe sequence gets memory session connected with chat ID from Redis database and checks if it is empty.",
+        "height": 301.7070028125353,
+        "width": 405.1821718020519
+      },
+      "id": "6c959979-1ffe-4d06-8599-10b94830316a",
+      "name": "Sticky Note13",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -60,
+        1869.1758343483557
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Conversation\nAccording to current memory session (```/m1```, ```/m2``` or ```/m3```) the specific call to FlowiseAI is triggered. **Remember to replace placeholder ```[URL_TO_YOUR_FLOWISE_CHATFLOW]``` with your actual Flowise chatflow URL.** Feel free to modify format of ```sessionId``` parameter (I used combination of Telegram chat ID and suffix ```mslot1```, ```mslot2```, ```mslot3``` - your ID can look totally different depending on the use case).",
+        "height": 756.3636654191122,
+        "width": 445.19113647927463
+      },
+      "id": "28bdfe03-c7b3-46ac-9cf8-5192b4db907e",
+      "name": "Sticky Note14",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        660,
+        2001.7620462850182
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Check if start": {
+      "main": [
+        [
+          {
+            "node": "Choose memory [TELEGRAM]",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check if command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if command": {
+      "main": [
+        [
+          {
+            "node": "Check if current memory [TELEGRAM]",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get current memory [REDIS]",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get current memory [REDIS]": {
+      "main": [
+        [
+          {
+            "node": "Check if record [REDIS]",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram trigger": {
+      "main": [
+        [
+          {
+            "node": "Check if start",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send typing action [TELEGRAM]",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check current memory [REDIS]": {
+      "main": [
+        [
+          {
+            "node": "Send memory info [TELEGRAM]",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if current memory [TELEGRAM]": {
+      "main": [
+        [
+          {
+            "node": "Check current memory [REDIS]",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch memory sessions [TELEGRAM] [1]",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if record [REDIS]": {
+      "main": [
+        [
+          {
+            "node": "Inform about empty record [TELEGRAM]",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch memory sessions [TELEGRAM] [2]",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Use M1 [FLOWISE/ZEP]": {
+      "main": [
+        [
+          {
+            "node": "Respond M1 [TELEGRAM]",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Use M2 [FLOWISE/ZEP]": {
+      "main": [
+        [
+          {
+            "node": "Respond M2 [TELEGRAM]",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Use M3 [FLOWISE/ZEP]": {
+      "main": [
+        [
+          {
+            "node": "Respond M3 [TELEGRAM]",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set memory session [REDIS] [1]": {
+      "main": [
+        [
+          {
+            "node": "Session confirmation [TELEGRAM] [1]",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set memory session [REDIS] [2]": {
+      "main": [
+        [
+          {
+            "node": "Session confirmation [TELEGRAM] [2]",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set memory session [REDIS] [3]": {
+      "main": [
+        [
+          {
+            "node": "Session confirmation [TELEGRAM] [3]",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch memory sessions [TELEGRAM] [1]": {
+      "main": [
+        [
+          {
+            "node": "Set memory session [REDIS] [1]",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set memory session [REDIS] [2]",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set memory session [REDIS] [3]",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Command not recognized [TELEGRAM]",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch memory sessions [TELEGRAM] [2]": {
+      "main": [
+        [
+          {
+            "node": "Use M1 [FLOWISE/ZEP]",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Use M2 [FLOWISE/ZEP]",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Use M3 [FLOWISE/ZEP]",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send error [TELEGRAM]",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "versionId": "f0179d81-5cd9-4e4a-8a2b-2db48763fda8",
+  "id": "fL4qcDqyNoNUkmVY",
+  "meta": {
+    "instanceId": "b21b670be57242c74bfdb80a938df3a351d045a7fb7c8d18ae5504d2a33209d9"
+  },
+  "tags": []
+}
