@@ -1,0 +1,311 @@
+{
+  "name": "Invoice OCR with NOTION and MINDEE",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "={{ $json['Invoice PDF'][0] }}",
+        "options": {}
+      },
+      "id": "8e8fe8f0-0f20-479f-9eb0-3fc16fcf5730",
+      "name": "Get PDF",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        620,
+        740
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "invoice"
+      },
+      "id": "c9e5b882-e895-4733-8813-cb8b4a872337",
+      "name": "Doc OCR [Mindee]",
+      "type": "n8n-nodes-base.mindee",
+      "typeVersion": 3,
+      "position": [
+        840,
+        740
+      ],
+      "credentials": {
+        "mindeeInvoiceApi": {
+          "id": "YLXkayEbTNlTMvoO",
+          "name": "Mindee Invoice API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json['Invoice PDF'][0] }}",
+              "operation": "isNotEmpty"
+            },
+            {
+              "value1": "={{ $json['Customer name'] }}",
+              "operation": "isEmpty"
+            },
+            {
+              "value1": "={{ $json.Value }}",
+              "operation": "isEmpty"
+            },
+            {
+              "value1": "={{ $json['Customer name'] }}",
+              "operation": "isEmpty"
+            },
+            {
+              "value1": "={{ $json.Currency }}",
+              "operation": "isEmpty"
+            }
+          ]
+        }
+      },
+      "id": "1adadaf5-54a5-4ae4-b68e-f6b81c89156f",
+      "name": "Filter out non-empty records",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 1,
+      "position": [
+        400,
+        740
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "value": "={{ $('Notion trigger').item.json.id }}",
+          "mode": "id",
+          "__regex": "^([0-9a-f]{8}-?[0-9a-f]{4}-?4[0-9a-f]{3}-?[89ab][0-9a-f]{3}-?[0-9a-f]{12})"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Invoice number|title",
+              "title": "={{ $json.invoice_number }}"
+            },
+            {
+              "key": "Customer name|rich_text",
+              "textContent": "={{ $json.customer_name }}"
+            },
+            {
+              "key": "Date|date",
+              "includeTime": false,
+              "date": "={{ $json.date }}"
+            },
+            {
+              "key": "Due date|date",
+              "includeTime": false,
+              "date": "={{ $json.due_date }}"
+            },
+            {
+              "key": "Value|number",
+              "numberValue": "={{ $json.total_amount }}"
+            },
+            {
+              "key": "Currency|rich_text",
+              "textContent": "={{ $json.currency }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6ba3b0ad-0b44-4c21-8e5c-d7dd78b4a302",
+      "name": "Update records [NOTION]",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2,
+      "position": [
+        1060,
+        740
+      ],
+      "credentials": {
+        "notionApi": {
+          "id": "W4Bb643JwBHxezME",
+          "name": "Notion API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "event": "pagedUpdatedInDatabase",
+        "databaseId": {
+          "__rl": true,
+          "value": "2601a29b-d10e-48c7-939e-daa9ff2cc831",
+          "mode": "list",
+          "cachedResultName": "OCR Assistant",
+          "cachedResultUrl": "https://www.notion.so/2601a29bd10e48c7939edaa9ff2cc831"
+        }
+      },
+      "id": "80779bf7-ca27-41cb-8ed4-9a91b023a8f6",
+      "name": "Notion trigger",
+      "type": "n8n-nodes-base.notionTrigger",
+      "typeVersion": 1,
+      "position": [
+        180,
+        740
+      ],
+      "credentials": {
+        "notionApi": {
+          "id": "W4Bb643JwBHxezME",
+          "name": "Notion API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## ⚠️ Note\n\n1. Complete video guide for this workflow is available [on my YouTube](https://www.youtube.com/watch?v=up2Wi3Y9a-4).\n2. Remember to add your credentials (covered in the video guide).\n3. Notion template (Social Image Generator) for this workflow available [here](https://shy-angelfish-d73.notion.site/2601a29bd10e48c7939edaa9ff2cc831?v=3cbbfacbe17c4074a7f7c1f0df027f75&pvs=4) (click \"duplicate\" to add template to your workspace).\n4. If you like this workflow, please subscribe to [my YouTube channel](https://www.youtube.com/@workfloows) and/or [my newsletter](https://workfloows.com/).\n\n**Thank you for your support!**",
+        "height": 311.48468467358765,
+        "width": 398.52076028843226
+      },
+      "id": "ac310924-02da-42db-b51a-3ef1c829523e",
+      "name": "Sticky Note5",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -300,
+        540
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Trigger\n\nWorkflow is activated every time database is updated (set polling time according to your needs). ",
+        "height": 369.538552133761,
+        "width": 178.9116807727541
+      },
+      "id": "8283a0cf-699d-417e-a909-81044f3ecbcc",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        140,
+        540
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Filter\n\nFilter out items that already include complete data. ",
+        "height": 369.538552133761,
+        "width": 178.9116807727541
+      },
+      "id": "c8d7e4ae-a7b3-4ab4-89db-6fb6fc2182af",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        360,
+        540
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Perform doc reading and update record\n\nThis sequence makes a call to [Mindee](https://mindee.com/) API and updates specific row in Notion database.",
+        "height": 371.5385521337611,
+        "width": 434.1240424644708
+      },
+      "id": "fbacd34c-b24d-48cb-93cc-8b9de09f9638",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        802.3559202466091,
+        540
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Download PDF\n\nGet PDF file from specific row of Notion database.",
+        "height": 369.538552133761,
+        "width": 178.9116807727541
+      },
+      "id": "6fdad61d-f223-4691-93c8-bfb5784fffaa",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        580,
+        540
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🌐 API\n\nThis workflow is using Mindee API - you can find documentation [here](https://developers.mindee.com/docs). ",
+        "height": 126.83608073918806,
+        "width": 398.52076028843226
+      },
+      "id": "440384b8-d23b-46e3-a024-e38c46fcc197",
+      "name": "Sticky Note6",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -300,
+        880
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get PDF": {
+      "main": [
+        [
+          {
+            "node": "Doc OCR [Mindee]",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Doc OCR [Mindee]": {
+      "main": [
+        [
+          {
+            "node": "Update records [NOTION]",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter out non-empty records": {
+      "main": [
+        [
+          {
+            "node": "Get PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion trigger": {
+      "main": [
+        [
+          {
+            "node": "Filter out non-empty records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e30a66a6-f189-4258-ad66-dc89f3fcc166",
+  "id": "EdzT31MLnmSzf73S",
+  "meta": {
+    "instanceId": "4e33b83e762d8bff5fa22051bf1548b418f041b56f6bd9b4536d58b3a7af1854"
+  },
+  "tags": []
+}

@@ -1,0 +1,259 @@
+{
+  "name": "Create images with NOTION and RENDERFORM",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "event": "pagedUpdatedInDatabase",
+        "databaseId": {
+          "__rl": true,
+          "value": "e6bba80d-b7ce-4e34-a418-058fd1d557ba",
+          "mode": "list",
+          "cachedResultName": "Social Image Generator",
+          "cachedResultUrl": "https://www.notion.so/e6bba80db7ce4e34a418058fd1d557ba"
+        }
+      },
+      "id": "caa17d87-0a43-4ae5-8d02-b20a396424a2",
+      "name": "Notion trigger",
+      "type": "n8n-nodes-base.notionTrigger",
+      "typeVersion": 1,
+      "position": [
+        340,
+        60
+      ],
+      "credentials": {
+        "notionApi": {
+          "id": "W4Bb643JwBHxezME",
+          "name": "Notion API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.Position }}",
+              "operation": "isNotEmpty"
+            },
+            {
+              "value1": "={{ $json.Name }}",
+              "operation": "isNotEmpty"
+            },
+            {
+              "value1": "={{ $json.Topic }}",
+              "operation": "isNotEmpty"
+            },
+            {
+              "value1": "={{ $json.Image[0] }}",
+              "operation": "isEmpty"
+            }
+          ]
+        }
+      },
+      "id": "92309c66-43be-428f-aaf6-2939a38029cd",
+      "name": "Filter out empty and finished records",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 1,
+      "position": [
+        560,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://get.renderform.io/api/v2/render",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"template\":\"dusty-tigers-sail-tensely-1990\",\"data\":{\"image.src\":\"{{ $json[\"Image\"][0] }}\",\"topic.text\":\"{{ $json[\"Topic\"] }}\",\"presenter.text\":\"{{ $json[\"Name\"] }}\",\"presenter_title.text\":\"{{ $json[\"Position\"] }}\"}}",
+        "options": {}
+      },
+      "id": "5c887b16-6cc3-4e4e-91c5-479c954f3c93",
+      "name": "Generate image [RENDERFORM]",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        780,
+        60
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "vsimCHiqWdZ5L4Zo",
+          "name": "RenderForm API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "value": "={{ $('Notion trigger').item.json[\"id\"] }}",
+          "mode": "id",
+          "__regex": "^([0-9a-f]{8}-?[0-9a-f]{4}-?4[0-9a-f]{3}-?[89ab][0-9a-f]{3}-?[0-9a-f]{12})"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Social|files",
+              "fileUrls": {
+                "fileUrl": [
+                  {
+                    "name": "social",
+                    "url": "={{ $json.href }}"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f05b5691-5566-4fda-bf86-969dfba16e89",
+      "name": "Update records [NOTION]",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2,
+      "position": [
+        1000,
+        60
+      ],
+      "credentials": {
+        "notionApi": {
+          "id": "W4Bb643JwBHxezME",
+          "name": "Notion API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## ⚠️ Note\n\n1. Complete video guide for this workflow is available [on my YouTube](https://www.youtube.com/watch?v=up2Wi3Y9a-4).\n2. Remember to add your credentials (covered in the video guide).\n3. Notion template (Social Image Generator) for this workflow available [here](https://shy-angelfish-d73.notion.site/e6bba80db7ce4e34a418058fd1d557ba?v=925a2be608cb44219b5730b621756705&pvs=4) (click \"duplicate\" to add template to your workspace).\n4. If you like this workflow, please subscribe to [my YouTube channel](https://www.youtube.com/@workfloows) and/or [my newsletter](https://workfloows.com/).\n\n**Thank you for your support!**",
+        "height": 320.8800052473881,
+        "width": 398.52076028843226
+      },
+      "id": "e0d7156d-4536-497f-98e2-2c55c5230f59",
+      "name": "Sticky Note5",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -140,
+        -126
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Trigger\n\nWorkflow is activated every time database is updated (set polling time according to your needs). ",
+        "height": 369.538552133761,
+        "width": 178.9116807727541
+      },
+      "id": "9bfd451b-c018-432c-abd1-15d1a250e3bf",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        300,
+        -126
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Filter\n\nFilter out items that already have generated social image or don't include complete data. ",
+        "height": 369.538552133761,
+        "width": 178.9116807727541
+      },
+      "id": "5bb5dfb1-4008-4882-af7c-e40115b61eeb",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        520,
+        -126
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Generate image and update database row\n\nThis sequence makes a call to [RenderForm](https://renderform.io/) API and updates specific row in Notion database. Remember to update your credentials and template parameters.",
+        "height": 371.5385521337611,
+        "width": 432.9116807727541
+      },
+      "id": "c52d764d-d6e7-47b9-ac2d-52e631ac3247",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        740,
+        -127
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🌐 API\n\nThis workflow is using RenderForm API - you can find documentation [here](https://renderform.io/docs/). ",
+        "height": 127.88000524738811,
+        "width": 398.52076028843226
+      },
+      "id": "1e9ddcae-183f-4aae-8de1-5f69c2bd60e1",
+      "name": "Sticky Note6",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -140,
+        220
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Notion trigger": {
+      "main": [
+        [
+          {
+            "node": "Filter out empty and finished records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter out empty and finished records": {
+      "main": [
+        [
+          {
+            "node": "Generate image [RENDERFORM]",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate image [RENDERFORM]": {
+      "main": [
+        [
+          {
+            "node": "Update records [NOTION]",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c1c29f92-ba00-460f-911d-3db99510d479",
+  "id": "BGMvEpqiIzUennYF",
+  "meta": {
+    "instanceId": "4e33b83e762d8bff5fa22051bf1548b418f041b56f6bd9b4536d58b3a7af1854"
+  },
+  "tags": []
+}

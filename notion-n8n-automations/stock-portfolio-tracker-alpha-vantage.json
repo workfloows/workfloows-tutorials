@@ -1,0 +1,307 @@
+{
+  "name": "Stock tracker with NOTION and ALPHA VANTAGE",
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "value": "76ac1d15-8bec-4533-807f-80f296e89b10",
+          "mode": "list",
+          "cachedResultName": "Stock Portfolio Tracker",
+          "cachedResultUrl": "https://www.notion.so/76ac1d158bec4533807f80f296e89b10"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "id": "f800d3ce-5d4d-4aba-9fe5-d4d199d8f9e6",
+      "name": "Get tickers [NOTION]",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2,
+      "position": [
+        20,
+        680
+      ],
+      "credentials": {
+        "notionApi": {
+          "id": "W4Bb643JwBHxezME",
+          "name": "Notion API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "value": "={{ $('Get tickers [NOTION]').item.json.id }}",
+          "mode": "id",
+          "__regex": "^([0-9a-f]{8}-?[0-9a-f]{4}-?4[0-9a-f]{3}-?[89ab][0-9a-f]{3}-?[0-9a-f]{12})"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Price|number",
+              "numberValue": "={{ Number($json['Global Quote']['05. price']) }}"
+            },
+            {
+              "key": "Price date|date",
+              "includeTime": false,
+              "date": "={{ $json['Global Quote']['07. latest trading day'] }}",
+              "timezone": "America/New_York"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "bf70fa6d-2a4e-486f-b58c-845407319515",
+      "name": "Update rows [NOTION]",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2,
+      "position": [
+        880,
+        460
+      ],
+      "credentials": {
+        "notionApi": {
+          "id": "W4Bb643JwBHxezME",
+          "name": "Notion API"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "1e90021c-36de-41cb-a8e8-0611b54ce25f",
+      "name": "No operation",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        440,
+        880
+      ]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "a76dc779-c3a3-46de-b4f2-bcf912a84f63",
+      "name": "Split in batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 2,
+      "position": [
+        240,
+        680
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={{ $json[\"property_ticker\"] }}&apikey=[YOUR_API_KEY]",
+        "options": {}
+      },
+      "id": "2ff0d4ca-548f-4c91-9f7b-6670b8bc51c2",
+      "name": "Quote endpoint [VANTAGE ALPHA]",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        660,
+        460
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## ⚠️ Note\n\n1. Complete video guide for this workflow is available [on my YouTube](https://youtu.be/up2Wi3Y9a-4).\n2. Remember to add your credentials (covered in the video guide).\n3. Notion template (Stock Portfolio Tracker) for this workflow available [here](https://shy-angelfish-d73.notion.site/76ac1d158bec4533807f80f296e89b10?v=98e123608ad54d8198174907691c8ace&pvs=4) (click \"duplicate\" to add template to your workspace).\n4. If you like this workflow, please subscribe to [my YouTube channel](https://www.youtube.com/@workfloows) and/or [my newsletter](https://workfloows.com/).\n\n**Thank you for your support!**",
+        "height": 311.3138775936101,
+        "width": 398.52076028843226
+      },
+      "id": "a3964007-7a46-43a8-9704-5300b02a4428",
+      "name": "Sticky Note5",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -680,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "id": "d7c31990-f036-42ff-b9c4-f60cd1a5eebf",
+      "name": "Schedule trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -200,
+        680
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Trigger\n\nWorkflow is activated everyday at specific time. ",
+        "height": 323.538552133761,
+        "width": 178.9116807727541
+      },
+      "id": "8c74770f-d43b-4b26-b3ee-b469d8b1c665",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Get tickers\n\nReturn stock tickers from Notion database. ",
+        "height": 323.538552133761,
+        "width": 178.9116807727541
+      },
+      "id": "5663fbe3-5537-40d0-a7a4-9658cd787ca9",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -20,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Get prices and update database\n\nThis sequence gets current stock prices using [Alpha Vantage API](https://www.alphavantage.co/) and updates rows in Notion database. Free API key provides **5 API requests per minute**, so workflow sends request every 12 seconds.\n\n**Important:** remember to replace ```[YOUR_API_KEY]``` in field URL with your actual Alpha Vantage API key.",
+        "height": 396.66293784941865,
+        "width": 628.9480210610396
+      },
+      "id": "72953b3d-ad5c-466e-870f-0dfe4c634641",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        400,
+        246.87561428434236
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 12,
+        "unit": "seconds"
+      },
+      "id": "5c4b52da-90ff-41d5-bc4d-a7fc37f8a82e",
+      "name": "Wait 12 second",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        440,
+        460
+      ],
+      "webhookId": "2f1d1415-8666-4564-be5f-da72eadd3dc8"
+    },
+    {
+      "parameters": {
+        "content": "## 🌐 API\n\nThis workflow is using Alpha Vantage API - you can find documentation [here](https://www.alphavantage.co/documentation/). ",
+        "height": 127.88000524738811,
+        "width": 398.52076028843226
+      },
+      "id": "9aef4868-f443-41d0-939a-c78f7843670b",
+      "name": "Sticky Note6",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -680,
+        860
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get tickers [NOTION]": {
+      "main": [
+        [
+          {
+            "node": "Split in batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split in batches": {
+      "main": [
+        [
+          {
+            "node": "Wait 12 second",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No operation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Quote endpoint [VANTAGE ALPHA]": {
+      "main": [
+        [
+          {
+            "node": "Update rows [NOTION]",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update rows [NOTION]": {
+      "main": [
+        [
+          {
+            "node": "Split in batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule trigger": {
+      "main": [
+        [
+          {
+            "node": "Get tickers [NOTION]",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 12 second": {
+      "main": [
+        [
+          {
+            "node": "Quote endpoint [VANTAGE ALPHA]",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6a231d49-c6fc-4512-9132-e1bdf00b8b9a",
+  "id": "Ra1stCrtV7yiFs34",
+  "meta": {
+    "instanceId": "4e33b83e762d8bff5fa22051bf1548b418f041b56f6bd9b4536d58b3a7af1854"
+  },
+  "tags": []
+}
